@@ -182,7 +182,8 @@
                 android:paddingStart="18dp"
                 android:text="⌫"
                 android:textSize="32dp"
-                android:layout_marginEnd="10dp"/>
+                android:layout_marginEnd="10dp"
+                tools:ignore="OnClick" />
 
             <com.google.android.material.button.MaterialButton
                 android:onClick="onNumberClick"

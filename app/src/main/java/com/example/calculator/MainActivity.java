@@ -211,4 +211,15 @@ public class MainActivity extends AppCompatActivity {
             inputExpression.setLength(0);
         }
     }
+
+    public void onBackspaceClick(View view) {
+        hideSpecialButton();
+        if (inputExpression.length() > 0) {
+            inputExpression.deleteCharAt(inputExpression.length() - 1);
+            tvResult.setText(inputExpression.length() > 0 ? inputExpression.toString() : "0");
+        } else {
+            tvResult.setText("0");
+        }
+    }
+
 }
