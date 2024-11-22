@@ -19,5 +19,12 @@
         <item name="android:textColor"> @color/orange</item>
     </style>
 
+    <style name="CustomTextInputLayout" parent="Widget.MaterialComponents.TextInputLayout.OutlinedBox">
+        <item name="endIconMode">dropdown_menu</item>
+    </style>
+
+
+
+
 
 </resources>

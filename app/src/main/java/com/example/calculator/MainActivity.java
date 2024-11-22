@@ -1,9 +1,11 @@
 package com.example.calculator;
 
 import androidx.appcompat.app.AppCompatActivity;
+
+import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
-import android.widget.HorizontalScrollView;
+import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -13,20 +15,47 @@ import net.objecthunter.exp4j.ExpressionBuilder;
 
 public class MainActivity extends AppCompatActivity {
 
+    public static MainActivity instance;
+
     private TextView tvResult;
+    private Button specialButton;
     private StringBuilder inputExpression = new StringBuilder();
+    private boolean isResultShown = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        instance = this;
+
         tvResult = findViewById(R.id.tvResult);
+
+
+
+        specialButton = findViewById(R.id.buttonToNewActivity);
+
+        specialButton.setVisibility(View.GONE);
+
+        specialButton.setOnClickListener(v -> {
+            String resultText = tvResult.getText().toString();
+            Intent intent = new Intent(MainActivity.this, SecondActivity.class);
+            intent.putExtra("key1", resultText);
+            startActivity(intent);
+        });
     }
 
+
+
     public void onNumberClick(View view) {
+        hideSpecialButton();
         MaterialButton button = (MaterialButton) view;
         String value = button.getText().toString();
+
+        if (isResultShown) {
+            inputExpression.setLength(0);
+            isResultShown = false;
+        }
 
         if (value.equals("AC")) {
             inputExpression.setLength(0);
@@ -55,23 +84,15 @@ public class MainActivity extends AppCompatActivity {
         tvResult.setText(inputExpression.length() > 0 ? inputExpression.toString() : "0");
     }
 
-    private String getCurrentNumber(String expression) {
-        int lastOperatorIndex = Math.max(
-                Math.max(expression.lastIndexOf('+'), expression.lastIndexOf('-')),
-                Math.max(expression.lastIndexOf('*'), expression.lastIndexOf('/'))
-        );
-
-        if (lastOperatorIndex == -1) {
-            return expression;
-        }
-
-        return expression.substring(lastOperatorIndex + 1);
-    }
-
-
     public void onOperationClick(View view) {
+        hideSpecialButton();
         MaterialButton button = (MaterialButton) view;
         String value = button.getText().toString();
+
+        if (isResultShown && !value.equals("=")) {
+            isResultShown = false;
+            inputExpression.setLength(0);
+        }
 
         if (value.equals("X")) {
             value = "*";
@@ -87,6 +108,8 @@ public class MainActivity extends AppCompatActivity {
 
         if (value.equals("=")) {
             calculateResult();
+            specialButton.setVisibility(View.VISIBLE);
+            isResultShown = true;
         } else if (value.equals("%")) {
             calculateLastNumberPercentage();
         } else {
@@ -95,10 +118,51 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    private void hideSpecialButton() {
+        specialButton.setVisibility(View.GONE);
+    }
+
     private boolean isOperator(char c) {
         return c == '+' || c == '-' || c == '*' || c == '/';
     }
 
+    private String getCurrentNumber(String expression) {
+        int lastOperatorIndex = Math.max(
+                Math.max(expression.lastIndexOf('+'), expression.lastIndexOf('-')),
+                Math.max(expression.lastIndexOf('*'), expression.lastIndexOf('/'))
+        );
+
+        if (lastOperatorIndex == -1) {
+            return expression;
+        }
+
+        return expression.substring(lastOperatorIndex + 1);
+    }
+
+    private void calculateResult() {
+        try {
+            if (inputExpression.toString().matches(".*/0(\\.0*)?$")) {
+                Toast.makeText(this, "На ноль делить нельзя", Toast.LENGTH_SHORT).show();
+                tvResult.setText("0");
+                inputExpression.setLength(0);
+                return;
+            }
+
+            Expression expression = new ExpressionBuilder(inputExpression.toString()).build();
+            double result = expression.evaluate();
+
+            String output = (result == (long) result) ? String.valueOf((long) result) : String.valueOf(result);
+
+            tvResult.setText(output);
+            inputExpression.setLength(0);
+            inputExpression.append(output);
+            isResultShown = true;
+        } catch (Exception e) {
+            tvResult.setText("0");
+            Toast.makeText(this, "Ошибка в вычислении", Toast.LENGTH_SHORT).show();
+            inputExpression.setLength(0);
+        }
+    }
 
     private void calculateLastNumberPercentage() {
         try {
@@ -147,43 +211,4 @@ public class MainActivity extends AppCompatActivity {
             inputExpression.setLength(0);
         }
     }
-
-
-
-
-
-    private void calculateResult() {
-        try {
-
-            if (inputExpression.toString().matches(".*/0(\\.0*)?$")) {
-                Toast.makeText(this, "На ноль делить нельзя", Toast.LENGTH_SHORT).show();
-                tvResult.setText("0");
-                inputExpression.setLength(0);
-                return;
-            }
-
-            Expression expression = new ExpressionBuilder(inputExpression.toString()).build();
-            double result = expression.evaluate();
-
-
-            String output = (result == (long) result) ? String.valueOf((long) result) : String.valueOf(result);
-
-            tvResult.setText(output);
-            inputExpression.setLength(0);
-            inputExpression.append(output);
-        } catch (Exception e) {
-            tvResult.setText("0");
-            Toast.makeText(this, "Ошибка в вычислении", Toast.LENGTH_SHORT).show();
-            inputExpression.setLength(0);
-        }
-    }
-
-    public void onBackspaceClick(View view) {
-        if (inputExpression.length() > 0) {
-            inputExpression.deleteCharAt(inputExpression.length() - 1);
-            tvResult.setText(inputExpression.length() > 0 ? inputExpression.toString() : "0");
-        }
-    }
-
-
 }

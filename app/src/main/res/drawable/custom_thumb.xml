@@ -1,0 +1,5 @@
+<shape xmlns:android="http://schemas.android.com/apk/res/android">
+    <solid android:color="#6200EE"/> <!-- Цвет ползунка -->
+    <size android:width="20dp" android:height="20dp"/> <!-- Размер ползунка -->
+    <corners android:radius="10dp"/> <!-- Скругление углов -->
+</shape>
